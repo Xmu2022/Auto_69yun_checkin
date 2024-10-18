@@ -42,7 +42,7 @@ def main():
     zip_file_path = "69tools.zip"
     extract_to = "."  # 解压路径
     main_program = "main.py"  # 替换为实际的入口文件名
-    execute_path = '69tools/' # 执行路径
+    execute_path = '69tools' # 执行路径
     if download_file(url, zip_file_path):
         unzip_file(zip_file_path, extract_to)
         main_program_path = os.path.join(execute_path, main_program)
