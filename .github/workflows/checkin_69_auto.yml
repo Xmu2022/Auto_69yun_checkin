@@ -1,9 +1,9 @@
 name: checkin_69_auto
 
 on:
-  workflow_dispatch:  # 允许手动触发
-#  schedule:
- #   - cron: '0 11 * * *'  # 每天 11:00 执行一次（UTC时间）
+#  workflow_dispatch:  # 允许手动触发
+  schedule:
+    - cron: '*/10 * * * *'  # 每天 11:00 执行一次（UTC时间）
 
 jobs:
   run-python-script:
