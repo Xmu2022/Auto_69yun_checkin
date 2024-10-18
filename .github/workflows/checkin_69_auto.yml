@@ -20,9 +20,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install requests beautifulsoup4 python-telegram-bot asyncio zipfile 
-        os sys subprocess
-        import requests 
+        pip install requests beautifulsoup4 python-telegram-bot asyncio zipfile os sys subprocess
 
     - name: Run Python script
       run: |
