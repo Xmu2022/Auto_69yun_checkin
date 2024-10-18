@@ -30,12 +30,12 @@ def unzip_file(zip_path, extract_to):
 def run_main_program(main_program_path):
     """运行主程序"""
     print(f"开始运行主程序: {main_program_path}")
-    result = subprocess.run([sys.executable, main_program_path])
+    result = subprocess.run([sys.executable, main_program_path], capture_output=True, text=True)
     if result.returncode == 0:
         print("主程序运行成功！")
     else:
         print(f"主程序运行失败，返回码: {result.returncode}")
-
+        print(f"错误输出: {result.stderr}")  # 输出错误信息
 
 def main():
     url = "https://69yun69.com/download/scripts/69tools.zip"  # 这是更新的代码的 URL
