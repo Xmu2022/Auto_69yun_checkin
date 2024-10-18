@@ -21,6 +21,15 @@ jobs:
     - name: Install dependencies
       run: |
         pip install requests beautifulsoup4 python-telegram-bot
+        
+    - name: Check directory
+      run: ls -l
+      
+    - name: Check Python path
+      run: python -c "import sys; print(sys.path)"
+
+    - name: Check Python vervion
+      run: python -V
 
     - name: Run Python script
       run: |
