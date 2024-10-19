@@ -22,12 +22,6 @@ jobs:
       run: |
         pip install requests beautifulsoup4 python-telegram-bot
         
-    - name: check path 
-      run: |
-        pwd
-        ls -l 69tools/checkin_69_auto.cpython-38-x86_64-linux-gnu.so
-
-        
     - name: Run Python script
       run: |
         python interface_main.py
