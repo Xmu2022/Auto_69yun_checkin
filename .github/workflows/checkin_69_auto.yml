@@ -7,7 +7,7 @@ on:
 
 jobs:
   run-python-script:
-    runs-on: centos-latest
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
