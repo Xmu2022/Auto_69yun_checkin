@@ -7,7 +7,7 @@ on:
 
 jobs:
   run-python-script:
-    runs-on: centos-7.9.2009
+    runs-on: centos-7.9
 
     steps:
     - name: Checkout code
