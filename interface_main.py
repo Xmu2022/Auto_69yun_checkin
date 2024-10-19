@@ -48,17 +48,17 @@ def main():
         main_program_path = os.path.join(execute_path, main_program)
 
     
-        # 获取当前工作目录
-    current_directory = os.getcwd()
-    print(f"当前工作目录: {current_directory}")
-    
-    # 检查共享对象文件的详细信息
-    file_path = "69tools/checkin_69_auto.cpython-38-x86_64-linux-gnu.so"
-    try:
-        file_info = subprocess.check_output(['ls', '-l', file_path], text=True)
-        print(f"文件详细信息:\n{file_info}")
-    except subprocess.CalledProcessError as e:
-        print(f"错误: {e}")
+            # 获取当前工作目录
+        current_directory = os.getcwd()
+        print(f"当前工作目录: {current_directory}")
+        
+        # 检查共享对象文件的详细信息
+        file_path = "69tools/checkin_69_auto.cpython-38-x86_64-linux-gnu.so"
+        try:
+            file_info = subprocess.check_output(['ls', '-l', file_path], text=True)
+            print(f"文件详细信息:\n{file_info}")
+        except subprocess.CalledProcessError as e:
+            print(f"错误: {e}")
 
         
         
