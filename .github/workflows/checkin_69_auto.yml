@@ -20,7 +20,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install requests beautifulsoup4 python-telegram-bot
+        pip install requests beautifulsoup4 python-telegram-bot aiohttp
         
     - name: Run Python script
       run: |
