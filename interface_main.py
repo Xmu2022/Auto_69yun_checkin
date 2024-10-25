@@ -1,66 +1,121 @@
 
+
+#################### V2 ################
 # -*- coding: utf-8 -*-
 
-import requests
-import zipfile
-import os
-import sys
-import subprocess
+import aiohttp
+from bs4 import BeautifulSoup
+import json
+import re
+from telegram import Bot
 import asyncio
 
 
-def download_file(url, local_path):
-    """通过 HTTPS 下载文件"""
-    print(f"开始下载文件: {url}")
-    response = requests.get(url, verify=False)
-    if response.status_code == 200:
-        with open(local_path, "wb") as file:
-            file.write(response.content)
-        print(f"文件下载成功，保存至: {local_path}")
-        return True
+# Telegram bot 配置
+TELEGRAM_API_TOKEN = '7291969511:AAG0e6C0dlIaGqOUpv_-1JHvQ2lJhTUrP5c'
+CHAT_ID = '-1002031723207'
+
+# 初始化 Telegram bot
+bot = Bot(token=TELEGRAM_API_TOKEN)
+
+domains = ["69yun69.com"]
+
+def load_credentials(filepath):
+    """从文件中加载用户凭据"""
+    credentials = []
+    with open(filepath, "r", encoding="utf-8") as file:
+        for line in file:
+            email, passwd = line.strip().split(',')
+            credentials.append((email, passwd))
+    return credentials
+
+def convert_mb_to_gb(mb_value):
+    """将MB转换为GB，并保留两位小数"""
+    if mb_value.endswith("MB"):
+        mb = float(mb_value.replace("MB", "").strip())
+        gb = mb / 1024
+        return f"{gb:.2f}GB"
+    return mb_value
+
+async def auto_checkin(domain, email, passwd):
+    login_url = f"https://{domain}/auth/login"
+    checkin_url = f"https://{domain}/user/checkin"
+    user_info_url = f"https://{domain}/user"
+
+    async with aiohttp.ClientSession() as session:
+        # 模拟登录请求
+        login_data = {
+            "email": email,
+            "passwd": passwd,
+            "code": ""
+        }
+        headers = {
+            "Referer": "; auto"
+        }
+
+        async with session.post(login_url, data=login_data, headers=headers, ssl=False) as login_response:
+            # 检查是否登录成功
+            if login_response.status != 200:
+                return None
+
+        # 模拟签到请求
+        async with session.post(checkin_url, headers=headers, ssl=False) as checkin_response:
+            checkin_response_text = await checkin_response.text()
+
+        # 登录成功后获取用户信息页面
+        async with session.get(user_info_url, headers=headers, ssl=False) as user_info_response:
+            user_info_text = await user_info_response.text()
+
+    print("user_info_text:", user_info_text)  # 打印原始 HTML 内容
+
+    # 使用 BeautifulSoup 解析 HTML 并提取套餐级别
+    soup = BeautifulSoup(user_info_text, 'html.parser')
+
+    # 根据具体的 HTML 结构，定位并提取套餐级别信息
+    package_level_div = soup.find('div', class_='card-body pt-2 pl-5 pr-3 pb-1')
+    if package_level_div:
+        package_level_text = package_level_div.find('p', class_='text-dark-50')
+        package_level = package_level_text.get_text(strip=True).split(':')[0].strip() if package_level_text else "N/A"
     else:
-        print(f"下载失败，状态码: {response.status_code}，请检查 URL 或网络连接。")
-        return False
+        package_level = "N/A"
+    print('package_level:', package_level)
 
+    username_match = re.search(r"name: '([^']*)'", user_info_text)
+    expire_date_match = re.search(r"Class_Expire': '([^']*)'", user_info_text)
+    traffic_match = re.search(r"Unused_Traffic': '([^']*)'", user_info_text)
 
-def unzip_file(zip_path, extract_to):
-    """解压缩 ZIP 文件"""
-    print(f"开始解压缩文件: {zip_path}")
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        zip_ref.extractall(extract_to)
-    print(f"文件解压成功，已解压到: {extract_to}")
+    username = username_match.group(1) if username_match else "N/A"
+    expire_date = expire_date_match.group(1) if expire_date_match else "N/A"
+    traffic = convert_mb_to_gb(traffic_match.group(1)) if traffic_match else "N/A"
 
+    checkin_result_json = json.loads(checkin_response_text)
 
-async def run_main_program(main_program_path):
-    """运行主程序（异步处理）"""
-    print(f"开始运行主程序: {main_program_path}")
-    result = subprocess.run([sys.executable, main_program_path], capture_output=True, text=True)
-    if result.returncode == 0:
-        print("主程序运行成功！")
+    # 判断签到状态
+    if checkin_result_json.get("ret") == 0:
+        message = f"🎉 签到结果 🎉\n\n 您似乎已经签到过了...😅\n\n🔑 用户名: {username}\n📅 套餐到期时间: {expire_date}\n📊 剩余流量: {traffic}\n🏆 套餐级别: {package_level}"
+    elif checkin_result_json.get("ret") == 1:
+        message = f"🎉 签到结果 🎉\n\n ✅ 签到成功！\n尊贵的 🌟 {package_level}，您获得了 {checkin_result_json.get('traffic')} 流量. 🎊\n\n🔑 用户名: {username}\n📅 套餐到期时间: {expire_date}\n📊 剩余流量: {traffic}\n🏆 套餐级别: {package_level}"
     else:
-        print(f"主程序运行失败，返回码: {result.returncode}")
-        print(f"错误输出: {result.stderr}")  # 输出错误信息
+        message = f"🎉 签到结果 🎉\n\n 签到失败! 😅\n\n{checkin_response_text}\n🔑 用户名: {username}\n📅 套餐到期时间: {expire_date}\n🏆 剩余流量: {traffic}\n🏆 套餐级别: {package_level}"
 
+    return message.strip()
+
+async def send_telegram_message(message):
+    """发送消息到 Telegram"""
+    await bot.send_message(chat_id=CHAT_ID, text=message)
 
 async def main():
-    url = "https://69yun69.com/download/scripts/69tools.zip"  # 这是更新的代码的 URL
-    zip_file_path = "69tools.zip"
-    extract_to = "."  # 解压路径
-    main_program = "main.py"  # 替换为实际的入口文件名
-    execute_path = '69tools'  # 执行路径
-
-    if download_file(url, zip_file_path):
-        unzip_file(zip_file_path, extract_to)
-        main_program_path = os.path.join(execute_path, main_program)
-
-        # 检查主程序文件是否存在再运行
-        if os.path.isfile(main_program_path):
-            await run_main_program(main_program_path)  # 异步运行主程序
-        else:
-            print(f"主程序文件不存在: {main_program_path}")
-    else:
-        print("下载文件失败，请检查网络或文件地址。")
-
+    credentials = load_credentials("credentials.txt")  # 读取凭据文件
+    for email, passwd in credentials:
+        for domain in domains:
+            print(f"Checking in for {email} with domain {domain}")
+            checkin_result = await auto_checkin(domain, email, passwd)
+            if checkin_result:
+                print(checkin_result)
+                await send_telegram_message(checkin_result)
+                break
+            else:
+                print('签到失败!')
 
 if __name__ == "__main__":
-    asyncio.run(main())  # 异步调用主函数
+    asyncio.run(main())
