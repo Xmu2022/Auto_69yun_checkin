@@ -24,4 +24,4 @@ jobs:
         
     - name: Run Python script
       run: |
-        python interface_main.py
+        python checkin_69_auto.py
