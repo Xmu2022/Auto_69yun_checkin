@@ -55,7 +55,6 @@ async def auto_checkin(domain, email, passwd):
         async with session.get(user_info_url, headers=headers, ssl=False) as user_info_response:
             user_info_text = await user_info_response.text()
 
-    print("user_info_text:", user_info_text)  # 打印原始 HTML 内容
 
     # 使用 BeautifulSoup 解析 HTML 并提取套餐级别
     soup = BeautifulSoup(user_info_text, 'html.parser')
@@ -67,7 +66,6 @@ async def auto_checkin(domain, email, passwd):
         package_level = package_level_text.get_text(strip=True).split(':')[0].strip() if package_level_text else "N/A"
     else:
         package_level = "N/A"
-    print('package_level:', package_level)
 
     username_match = re.search(r"name: '([^']*)'", user_info_text)
     expire_date_match = re.search(r"Class_Expire': '([^']*)'", user_info_text)
