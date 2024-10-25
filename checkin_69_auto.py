@@ -1,5 +1,3 @@
-
-
 #################### V2 ################
 # -*- coding: utf-8 -*-
 
@@ -7,16 +5,7 @@ import aiohttp
 from bs4 import BeautifulSoup
 import json
 import re
-from telegram import Bot
 import asyncio
-
-
-# Telegram bot 配置
-TELEGRAM_API_TOKEN = '7291969511:AAG0e6C0dlIaGqOUpv_-1JHvQ2lJhTUrP5c'
-CHAT_ID = '-1002031723207'
-
-# 初始化 Telegram bot
-bot = Bot(token=TELEGRAM_API_TOKEN)
 
 domains = ["69yun69.com"]
 
@@ -100,10 +89,6 @@ async def auto_checkin(domain, email, passwd):
 
     return message.strip()
 
-async def send_telegram_message(message):
-    """发送消息到 Telegram"""
-    await bot.send_message(chat_id=CHAT_ID, text=message)
-
 async def main():
     credentials = load_credentials("credentials.txt")  # 读取凭据文件
     for email, passwd in credentials:
@@ -112,7 +97,6 @@ async def main():
             checkin_result = await auto_checkin(domain, email, passwd)
             if checkin_result:
                 print(checkin_result)
-                await send_telegram_message(checkin_result)
                 break
             else:
                 print('签到失败!')
